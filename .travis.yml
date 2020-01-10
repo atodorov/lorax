@@ -1,24 +1,19 @@
-sudo: required
 language: python
-services:
-  - docker
 
 env:
-  - DOCKER=docker
+  global:
+   # The next declaration is the encrypted COVERITY_SCAN_TOKEN, created
+   #   via the "travis encrypt" command using the project repo's public key
+   - secure: "rCNctYF/grcG5Ybuwig/NkSyaCF/zZxBzDTIqMrob/Z2HORyzeeVJe8Sc/ruyzVsIHTGnZjyGLnI56Og38x6h8cXyL43sqkYOGnwmgf7qE+qb2Cp8JSDvVPyDmF3y7XkBXre5ZcSN2gK9LEVRu9oxRNaR+bYhKmuclY7PP9gYREaU8BBqVF58qxmiof/zW1NaJBq86UN9U5WJ1Yk5QSKRABSWuQzVfF+5w6QrxOKZzN4SEHEQux24Wtk+0CN5BeK3aARJE2ItZJe1dDDScN/ig/OvTIib4hYsNtdbOinxdbXhJxG3QTMaZQBYsRWBKk6Q+Ex7hbtz//V3K0e7gzpZpxs23dBMN1IaPh9fGCDoik339ezY503e3CJVXlSgzYGIc+l2ho31z0k5Rzf9UISUH8RrmLGRagcXCCYaBkMffsnvh5ABSedoeWt0SFDZ0XYyf+2KgGVIMyTp0ekDXv4ehHegpQaNrBTQJGKRvUcQ00yc3Ln3gE6aaRaJhYU5JIA8mJkf54aYjLn5Eh6B8m0qxS6OLb1GYsdA1qamP1LHuEi1ra2DRt15Kx3GVtR0qhIUdq4fSqnpQPG5H4y5yb1meFdXOfeRQ+E+1Zow6PSrliMgxalct6iaSSHTQLRLOUkIU5CoB9nE6Trcd+NRgycnuirbZDrPQ5PHs43i0pt2QY="
 
-script:
-  - make test-in-docker
+before_install:
+  - echo -n | openssl s_client -connect https://scan.coverity.com:443 | sed -ne '/-BEGIN CERTIFICATE-/,/-END CERTIFICATE-/p' | sudo tee -a /etc/ssl/certs/ca-
 
-after_success:
-  - |
-
-        cp .test-results/.coverage ./.coverage.docker
-
-        pip install coverage coveralls
-        coverage combine
-        coveralls
-
-notifications:
-  email:
-    on_failure: change
-    on_success: never
+addons:
+  coverity_scan:
+    project:
+      name: "atodorov/lorax"
+      description: "Tools for creating images"
+    notification_email: atodorov@otb.bg
+    build_command: "--no-command --fs-capture-search ./src/"
+    branch_pattern: coverity_scan
